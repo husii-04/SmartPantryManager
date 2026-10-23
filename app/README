@@ -1,0 +1,77 @@
+Smart Pantry Manager - Husna Mohamed, 402310405
+An Android app written in Java that helps reduce food waste.
+The user records the ingredients they already have at home (their "pantry"),
+and the app suggests only the recipes they can cook right now using those ingredients.
+No shopping trip needed.
+
+Features
+    Pantry management: add, edit and delete ingredients (name, quantity, unit and an optional expiry date)
+    Pantry list: a RecyclerView with a custom adapter, loaded from the database
+    20 pre-loaded recipes: seeded into the database the first time the app runs
+    Strict matching: a recipe is suggested only if every ingredient is in the pantry in at least the required quantity. If a recipe needs 5 ingredients and the pantry has 4, it is not shown
+    Robust matching: handles singular/plural names (tomato / tomatoes) and unit differences (kg / g, tbsp / tsp, ml / l)
+    Recipe detail screen: full ingredient list and method
+    Empty-state messages: a clear message when the pantry is empty or when no recipes match
+    Settings screen: toggle for expiring-soon alerts
+    Input validation: on the add/edit form (blank name, letters only, quantity must be a number above 0)
+    Bottom navigation bar: Pantry, Recipes and Settings
+
+Database choice: SQLite
+I chose SQLite (using SQLiteOpenHelper) because:
+    1.it runs locally on the device, so there is no server to build, host or pay for
+    2.it works fully offline, which suits a pantry app used in the kitchen
+    3.data is stored in a file on the phone, so it persists after the app is closed and reopened
+    4.it is the approach covered in the module's persistent data chapter
+
+Tables
+    Table	            Columns
+    pantry	            id, name, quantity, unit, expiry
+    recipes	            id, name, steps
+    recipe_ingredients	id, recipe_id (FK to recipes), name, quantity, unit
+
+How the strict-matching rule works
+RecipeMatcher.canMake() loops through every ingredient a recipe needs. For each one it:
+    1.normalises the name (lower case, trimmed, plural turned into singular)
+    2.adds up the matching pantry entries, converting units to a common base (g, ml or pcs)
+    3.returns false immediately if the amount in the pantry is less than the amount needed
+A recipe is suggested only if the loop finishes without returning false.
+
+Project structure
+    app/src/main/java/com/example/smartpantrymanager/
+        PantryItem.java, Recipe.java, RecipeIngredient.java   (models)
+        DatabaseHelper.java                                   (SQLite, CRUD, seed data)
+        RecipeMatcher.java                                    (strict-matching logic)
+        PantryAdapter.java, RecipeAdapter.java                (RecyclerView adapters)
+        BaseActivity.java                                     (shared bottom navigation)
+        MainActivity.java                                     (pantry list)
+        AddEditItemActivity.java                              (add / edit form)
+        SuggestedRecipesActivity.java                         (strict suggestions)
+        RecipeDetailActivity.java                             (recipe detail)
+        SettingsActivity.java                                 (settings)
+    app/src/main/res/layout/                                  (screen and row layouts)
+    app/src/main/res/menu/bottom_nav_menu.xml                 (navigation menu)
+    Setup and run instructions
+
+Requirements: Android Studio (recent version), JDK bundled with Android Studio, and an emulator or physical device running Android 7.0 (API 24) or higher.
+    1. Clone this repository:
+        git clone https://github.com/[husii-04]/SmartPantryManager.git
+    2.Open Android Studio and choose Open, then select the cloned SmartPantryManager folder.
+    3.Wait for the Gradle sync to finish.
+    4.Create an emulator in Device Manager (Pixel 6, API 24 or higher), or connect a physical device with USB debugging turned on.
+    5.Wait until the emulator has fully started and shows the home screen.
+    6.Press the green Run button.
+    No API keys, accounts or internet connection are needed.
+
+Testing the strict matching
+    Add Egg 2 pcs, Bread 2 pcs, Butter 10 g and Salt 1 tsp.
+    Open Recipes: Scrambled Eggs on Toast appears.
+    Delete Salt and open Recipes again: the recipe disappears.
+    Add Salt back and the recipe returns.
+    Close and reopen the app: the pantry data is still there.
+
+Tech
+    Java, Android Studio
+    SQLite via SQLiteOpenHelper
+    RecyclerView with custom adapters
+    Material Components (BottomNavigationView, MaterialCardView)
+    SharedPreferences for the settings toggle
